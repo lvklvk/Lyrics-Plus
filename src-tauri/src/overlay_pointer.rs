@@ -356,5 +356,6 @@ pub(crate) fn activate_runtime(app: &tauri::AppHandle) -> Result<(), String> {
     start_overlay_pointer_monitor(app.clone());
     start_player_monitor(app.clone());
     player_lifecycle::start_exit_monitor(app.clone());
+    state.laboratory.auto_start_if_enabled(app);
     Ok(())
 }

@@ -129,6 +129,9 @@ pub fn get_cached_lyrics(
     track_key: String,
     state: State<'_, AppState>,
 ) -> Result<Option<LyricsDocument>, String> {
+    if state.laboratory.is_client() {
+        return Ok(None);
+    }
     state.storage.load(&track_key)
 }
 
@@ -183,6 +186,9 @@ fn save_and_emit(
     input: SaveLyricsInput,
     kind: SaveKind,
 ) -> Result<LyricsDocument, String> {
+    if state.laboratory.is_client() {
+        return Err("实验室客户端不能在本机保存或替换歌词，请在服务端操作".into());
+    }
     state.storage.ensure_track_alias(
         &input.track_key,
         &input.title,
@@ -241,6 +247,9 @@ pub fn set_lyrics_offset(
     offset_ms: i64,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
+    if state.laboratory.is_client() {
+        return Err("实验室客户端不能在本机修改歌词偏移，请在服务端操作".into());
+    }
     state.storage.set_offset(&track_key, offset_ms)?;
     app.emit("lyrics://changed", &track_key)
         .map_err(|error| error.to_string())?;
@@ -255,6 +264,9 @@ pub fn remove_lyrics_association(
     track_key: String,
     state: State<'_, AppState>,
 ) -> Result<(), String> {
+    if state.laboratory.is_client() {
+        return Err("实验室客户端不能在本机解除歌词，请在服务端操作".into());
+    }
     state.storage.remove(&track_key)?;
     app.emit("lyrics://changed", &track_key)
         .map_err(|error| error.to_string())?;

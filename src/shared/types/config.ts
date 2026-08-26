@@ -3,6 +3,7 @@ import type { GlobalShortcutSettings, RegisteredApplication, PlayerSelection, Sy
 import type { LyricsBaseAppearance, LyricsDisplayPreferences, LyricsStyleInheritance } from "./lyrics";
 import type { ProviderSettings, ProviderSettingsView } from "./provider";
 import type { OverlaySettings, OverlayStyle } from "./overlay";
+import type { LaboratoryPreferences } from "./laboratory";
 
 export type SettingsSection = "style" | "lyrics" | "player" | "application" | "about";
 export type LanguagePreference = "system" | SupportedLanguage;
@@ -45,6 +46,7 @@ export type AppConfig = {
     hideWhenNotPlaying: boolean;
     appearance: OverlayAppearance;
   };
+  laboratory: LaboratoryPreferences;
 };
 
 export type ConfigExport = {

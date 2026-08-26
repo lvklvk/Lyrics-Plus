@@ -8,7 +8,7 @@ use std::time::{Duration, Instant};
 
 use rustfft::num_complex::Complex32;
 use rustfft::{Fft, FftPlanner};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Emitter};
 
 use super::{now_ms, PlaybackSnapshot, PlayerKind};
@@ -33,7 +33,7 @@ const RELEASE_SMOOTHING: f32 = 0.18;
 // 衰减到该阈值后直接归零，保证暂停时对外最终是严格的全零。
 const SILENCE_EPSILON: f32 = 0.001;
 
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum PlaybackSpectrumStatus {
     Idle,
@@ -45,7 +45,7 @@ pub enum PlaybackSpectrumStatus {
     Unavailable,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaybackSpectrumState {
     pub status: PlaybackSpectrumStatus,
@@ -63,7 +63,7 @@ impl Default for PlaybackSpectrumState {
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaybackSpectrumFrame {
     pub bands: [f32; BAND_COUNT],
@@ -72,7 +72,7 @@ pub struct PlaybackSpectrumFrame {
 }
 
 impl PlaybackSpectrumFrame {
-    fn silent(source_app_bundle_id: Option<String>) -> Self {
+    pub fn silent(source_app_bundle_id: Option<String>) -> Self {
         Self {
             bands: [0.0; BAND_COUNT],
             source_app_bundle_id,
@@ -364,6 +364,7 @@ pub struct PlaybackSpectrumService {
     subscribers: Arc<Mutex<std::collections::HashSet<String>>>,
     runtime: Mutex<RuntimeState>,
     operation: Mutex<()>,
+    last_frame: Arc<Mutex<PlaybackSpectrumFrame>>,
 }
 
 impl Default for PlaybackSpectrumService {
@@ -372,6 +373,7 @@ impl Default for PlaybackSpectrumService {
             subscribers: Arc::new(Mutex::new(std::collections::HashSet::new())),
             runtime: Mutex::new(RuntimeState::default()),
             operation: Mutex::new(()),
+            last_frame: Arc::new(Mutex::new(PlaybackSpectrumFrame::silent(None))),
         }
     }
 }
@@ -422,6 +424,42 @@ impl PlaybackSpectrumService {
                 source_app_bundle_id: None,
                 error: Some("频谱服务状态不可用".into()),
             })
+    }
+
+    pub fn frame(&self) -> PlaybackSpectrumFrame {
+        self.last_frame
+            .lock()
+            .map(|frame| frame.clone())
+            .unwrap_or_else(|_| PlaybackSpectrumFrame::silent(None))
+    }
+
+    /// 客户端只注册窗口订阅，不启动本机捕获；切回服务端后可沿用这些订阅恢复捕获。
+    pub fn subscribe_remote(
+        &self,
+        app: &AppHandle,
+        window_label: &str,
+        state: &PlaybackSpectrumState,
+    ) -> PlaybackSpectrumState {
+        if let Ok(mut subscribers) = self.subscribers.lock() {
+            subscribers.insert(window_label.to_string());
+        }
+        self.emit_state_to(app, window_label, state);
+        state.clone()
+    }
+
+    /// 客户端角色只消费远程频谱；切换角色时暂停本机捕获，但保留窗口订阅以便切回服务端后恢复。
+    pub fn suspend_capture(&self, app: &AppHandle) {
+        let Ok(_operation) = self.operation.lock() else {
+            return;
+        };
+        self.stop_capture();
+        if let Ok(mut runtime) = self.runtime.lock() {
+            runtime.state = PlaybackSpectrumState::default();
+            runtime.target_bundle_id = None;
+        }
+        let state = self.state();
+        self.emit_state(app, &state);
+        self.emit_silent_frame(app, None);
     }
 
     pub fn sync_snapshot(&self, app: &AppHandle, snapshot: &PlaybackSnapshot) {
@@ -529,6 +567,7 @@ impl PlaybackSpectrumService {
             let worker_stop = stop.clone();
             let app_for_worker = app.clone();
             let subscribers = self.subscribers.clone();
+            let last_frame = self.last_frame.clone();
             let source_app_bundle_id = target.clone();
             let thread = thread::spawn(move || {
                 run_spectrum_worker(
@@ -537,6 +576,7 @@ impl PlaybackSpectrumService {
                     worker_input,
                     worker_stop,
                     source_app_bundle_id,
+                    last_frame,
                 )
             });
             if let Ok(mut runtime) = self.runtime.lock() {
@@ -626,6 +666,9 @@ impl PlaybackSpectrumService {
 
     fn emit_silent_frame(&self, app: &AppHandle, source_app_bundle_id: Option<String>) {
         let frame = PlaybackSpectrumFrame::silent(source_app_bundle_id);
+        if let Ok(mut current) = self.last_frame.lock() {
+            *current = frame.clone();
+        }
         for label in self.subscriber_labels() {
             let _ = app.emit_to(label, PLAYBACK_SPECTRUM_FRAME_EVENT, frame.clone());
         }
@@ -645,6 +688,7 @@ fn run_spectrum_worker(
     input: Arc<SpectrumInput>,
     stop: Arc<AtomicBool>,
     source_app_bundle_id: String,
+    last_frame: Arc<Mutex<PlaybackSpectrumFrame>>,
 ) {
     let mut analyzer = SpectrumAnalyzer::new();
     let mut pending = VecDeque::with_capacity(FFT_SIZE * 2);
@@ -668,6 +712,9 @@ fn run_spectrum_worker(
             source_app_bundle_id: Some(source_app_bundle_id.clone()),
             observed_at_ms: now_ms(),
         };
+        if let Ok(mut current) = last_frame.lock() {
+            *current = frame.clone();
+        }
         let labels = subscribers
             .lock()
             .map(|subscribers| subscribers.iter().cloned().collect::<Vec<_>>())

@@ -30,13 +30,15 @@
 .settingsHeading h1 { margin: 0 0 5px; }
 .settingsHeading p { margin: 0; overflow-wrap: anywhere; }
 .settingsHeading > button { flex: none; max-width: 45%; overflow-wrap: anywhere; }
-.lyricsModeSelector { display: grid; width: 100%; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 0 0 24px; }
-.lyricsModeSelector button { min-width: 0; height: 72px; display: flex; flex-direction: column; gap: 7px; border-radius: var(--radius); background: color-mix(in srgb, var(--background) 64%, transparent); color: var(--muted-foreground); }
-.lyricsModeSelector button:hover { border-color: color-mix(in srgb, var(--foreground) 24%, var(--border)); background: var(--accent); color: var(--foreground); }
-.lyricsModeSelector button svg { width: 20px; height: 20px; }
-.lyricsModeSelector button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.lyricsModeSelector button[data-pressed] { border-color: color-mix(in srgb, var(--primary) 60%, var(--border)); background: color-mix(in srgb, var(--primary) 12%, var(--background)); color: var(--primary); box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent); }
-.lyricsModeSelector button[data-pressed]:hover { background: color-mix(in srgb, var(--primary) 16%, var(--background)); color: var(--primary); }
+.lyricsModeSelector, .laboratoryDirectionSelector { display: grid; width: 100%; gap: 10px; margin: 0 0 24px; }
+.lyricsModeSelector { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.laboratoryDirectionSelector { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.lyricsModeSelector button, .laboratoryDirectionSelector button { min-width: 0; height: 72px; display: flex; flex-direction: column; gap: 7px; border-radius: var(--radius); background: color-mix(in srgb, var(--background) 64%, transparent); color: var(--muted-foreground); }
+.lyricsModeSelector button:hover, .laboratoryDirectionSelector button:hover { border-color: color-mix(in srgb, var(--foreground) 24%, var(--border)); background: var(--accent); color: var(--foreground); }
+.lyricsModeSelector button svg, .laboratoryDirectionSelector button svg { width: 20px; height: 20px; }
+.lyricsModeSelector button span, .laboratoryDirectionSelector button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lyricsModeSelector button[data-pressed], .laboratoryDirectionSelector button[data-pressed] { border-color: color-mix(in srgb, var(--primary) 60%, var(--border)); background: color-mix(in srgb, var(--primary) 12%, var(--background)); color: var(--primary); box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary) 35%, transparent); }
+.lyricsModeSelector button[data-pressed]:hover, .laboratoryDirectionSelector button[data-pressed]:hover { background: color-mix(in srgb, var(--primary) 16%, var(--background)); color: var(--primary); }
 
 .card { margin-bottom: 24px; overflow: visible; }
 .cardHeader { min-height: 44px; }
@@ -150,6 +152,41 @@
 .inlineError { position: sticky; top: 0; z-index: 4; margin-bottom: 16px; display: flex; grid-template-columns: none; align-items: center; justify-content: space-between; gap: 12px; }
 .inlineError button { flex: none; }
 
+.laboratoryQrCodeCard { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--border); color: var(--muted-foreground); font-size: .75rem; }
+.laboratoryQrCodeCard img { width: 148px; height: 148px; padding: 8px; border-radius: 10px; background: white; image-rendering: pixelated; }
+.laboratoryQrCodeCard > svg { width: 148px; height: 148px; padding: 52px; border: 1px dashed var(--border); border-radius: 10px; }
+.laboratoryRoleSelector { width: 100%; }
+.laboratoryRoleSelector [data-slot="toggle-group-item"] { flex: 1; justify-content: center; }
+.laboratoryFieldGroup { gap: 0; }
+.laboratoryFieldGroup .settingRow > [data-slot="field-content"] { min-width: 0; }
+.laboratoryRuntimeActions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.laboratoryTextRow > [data-slot="field-content"] { min-width: 0; }
+.laboratoryPasswordRow { align-items: stretch; gap: 9px; }
+.laboratoryPasswordRow .laboratoryPasswordGroup { width: 100%; max-width: none; }
+.laboratoryUrlRow { align-items: stretch; gap: 9px; }
+.laboratoryUrlRow .laboratoryUrlGroup { width: 100%; max-width: none; }
+.laboratoryWebAddressGroup { width: min(100%, 520px); gap: 8px; }
+.laboratoryWebAddressGroup [data-slot="item"] { cursor: pointer; text-align: left; }
+.laboratoryWebAddressUrl { overflow-wrap: anywhere; font-family: var(--font-family-mono); font-size: .75rem; }
+.laboratoryManualFieldSet { margin: 0; padding: 16px; }
+.laboratoryManualFieldGroup { gap: 12px; }
+.laboratoryInlineAlert { margin: 12px 16px 16px; }
+.laboratoryIdValue { max-width: 100%; overflow-wrap: anywhere; font-family: var(--font-family-mono); font-size: .8rem; }
+.laboratoryPasswordGroup, .laboratoryUrlGroup { width: min(100%, 520px); }
+.laboratoryListPassword { max-width: 320px; margin-top: 4px; }
+.laboratoryItemGroup { gap: 8px; padding: 12px 16px 16px; }
+.laboratoryEmpty { min-height: 120px; border: 0; }
+.laboratoryLoading { display: flex; flex-direction: column; gap: 12px; }
+.laboratoryLoading > [data-slot="skeleton"] { height: 72px; }
+.laboratorySectionFooter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+
+@media (max-width: 640px) {
+  .laboratoryDirectionSelector { grid-template-columns: 1fr; }
+  .laboratoryRoleSelector { width: 100%; max-width: none; }
+  .laboratoryPasswordGroup, .laboratoryUrlGroup { width: 100%; }
+  .laboratoryQrCodeCard { align-items: flex-start; flex-direction: column; }
+}
+
 @media (max-width: 840px) {
   .sidebarTriggerRow { left: 10px; align-items: flex-start; transform: none; }
   .content { padding: 48px 24px 40px; }
@@ -157,7 +194,7 @@
   .rangeControl { width: min(280px, 55%); }
   .rangePairControl { width: min(280px, 55%); }
   .colorPresetGrid { grid-template-columns: 1fr; }
-  .lyricsModeSelector { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lyricsModeSelector:not(.laboratoryDirectionSelector) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 959px) {

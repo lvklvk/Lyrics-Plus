@@ -39,6 +39,15 @@ pub struct OverlayResizeBounds {
 
 #[tauri::command]
 pub fn get_playback_snapshot(state: State<'_, AppState>) -> PlaybackSnapshot {
+    if state.laboratory.is_client() {
+        return state
+            .laboratory
+            .remote_snapshot()
+            .map(|snapshot| snapshot.playback)
+            .unwrap_or_else(|| {
+                PlaybackSnapshot::unavailable(None, "实验室客户端尚未连接服务端".into())
+            });
+    }
     state
         .last_snapshot
         .read()
@@ -48,6 +57,9 @@ pub fn get_playback_snapshot(state: State<'_, AppState>) -> PlaybackSnapshot {
 
 #[tauri::command]
 pub fn control_playback(action: PlaybackAction, state: State<'_, AppState>) -> Result<(), String> {
+    if state.laboratory.is_client() {
+        return state.laboratory.send_playback_command(action, None);
+    }
     let snapshot = state
         .last_snapshot
         .read()
@@ -62,6 +74,11 @@ pub fn control_playback(action: PlaybackAction, state: State<'_, AppState>) -> R
 
 #[tauri::command]
 pub fn seek_playback(position_ms: u64, state: State<'_, AppState>) -> Result<(), String> {
+    if state.laboratory.is_client() {
+        return state
+            .laboratory
+            .send_playback_command(PlaybackAction::Play, Some(position_ms));
+    }
     let snapshot = state
         .last_snapshot
         .read()

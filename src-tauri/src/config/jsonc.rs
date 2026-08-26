@@ -7,6 +7,27 @@ fn canonical_config_jsonc(value: &AppConfig, language: UiLanguage) -> Result<Str
             line if line.starts_with("  \"schemaVersion\":") => {
                 Some(("  ", ConfigComment::SchemaVersion))
             }
+            line if line.starts_with("  \"laboratory\":") => {
+                Some(("  ", ConfigComment::Laboratory))
+            }
+            line if line.starts_with("    \"role\":") => {
+                Some(("    ", ConfigComment::LaboratoryRole))
+            }
+            line if line.starts_with("    \"autoStart\":") => {
+                Some(("    ", ConfigComment::LaboratoryAutoStart))
+            }
+            line if line.starts_with("      \"port\":") => {
+                Some(("      ", ConfigComment::LaboratoryPort))
+            }
+            line if line.starts_with("      \"discoveryEnabled\":") => {
+                Some(("      ", ConfigComment::LaboratoryDiscovery))
+            }
+            line if line.starts_with("      \"webEnabled\":") => {
+                Some(("      ", ConfigComment::LaboratoryWeb))
+            }
+            line if line.starts_with("      \"debounceMs\":") => {
+                Some(("      ", ConfigComment::LaboratoryDebounce))
+            }
             line if line.starts_with("    \"theme\":") => Some(("    ", ConfigComment::Theme)),
             line if line.starts_with("    \"language\":") => {
                 Some(("    ", ConfigComment::Language))

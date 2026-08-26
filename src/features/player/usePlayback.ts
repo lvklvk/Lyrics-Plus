@@ -8,6 +8,7 @@ import type {
   PlaybackArtwork,
   PlaybackSnapshot,
   PlayerSelection,
+  LaboratoryCommandResult,
 } from "../../shared/types";
 
 const initialSnapshot: PlaybackSnapshot = {
@@ -52,9 +53,15 @@ export function usePlayback() {
     const cleanupSelectionListener = createTauriListenerCleanup(
       listen<PlayerSelection>("player://selection", ({ payload }) => setSelectionState(payload)),
     );
+    const cleanupCommandResultListener = createTauriListenerCleanup(
+      listen<LaboratoryCommandResult>("laboratory://command-result", ({ payload }) => {
+        if (!payload.ok) setControlError(payload.error ?? "远程播放指令执行失败");
+      }),
+    );
     return () => {
       cleanupSnapshotListener();
       cleanupSelectionListener();
+      cleanupCommandResultListener();
     };
   }, []);
 

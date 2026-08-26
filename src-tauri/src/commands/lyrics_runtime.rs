@@ -181,6 +181,9 @@ async fn search_lyrics_for_session(
     input: LyricsSearchInput,
     force: bool,
 ) -> Result<SearchResponse, String> {
+    if state.laboratory.is_client() {
+        return Err("实验室客户端不能搜索歌词，请在服务端操作".into());
+    }
     if input.title.trim().is_empty() || input.artist.trim().is_empty() {
         return Err("搜索歌词需要歌曲名和歌手".into());
     }
@@ -231,6 +234,10 @@ async fn search_lyrics_for_session(
         .get_or_init(|| perform_lyrics_search(state, &input))
         .await
         .clone();
+    if state.laboratory.is_client() {
+        invalidate_lyrics_search_session(state);
+        return Err("实验室客户端不能搜索歌词，请在服务端操作".into());
+    }
     let mut session = state
         .lyrics_search_session
         .lock()
@@ -297,6 +304,11 @@ fn sync_lyrics_runtime_inner(app: &tauri::AppHandle, playback: &PlaybackSnapshot
     let Some(state) = app.try_state::<AppState>() else {
         return;
     };
+    if state.laboratory.is_client() {
+        // 客户端只消费服务端推送的歌词快照，不能启动本机搜索或自动替换。
+        crate::sync_lyrics_surfaces(app);
+        return;
+    }
     let next_key = playback_track_key(playback);
     let current_key = state
         .lyrics_runtime
@@ -346,7 +358,10 @@ fn sync_lyrics_runtime_inner(app: &tauri::AppHandle, playback: &PlaybackSnapshot
     let worker_app = app.clone();
     tauri::async_runtime::spawn(async move {
         let state = worker_app.state::<AppState>();
-        let current = || state.lyrics_generation.load(Ordering::SeqCst) == generation;
+        let current = || {
+            state.lyrics_generation.load(Ordering::SeqCst) == generation
+                && !state.laboratory.is_client()
+        };
         match state.storage.load(&track_key) {
             Ok(Some(document)) => {
                 if current() {

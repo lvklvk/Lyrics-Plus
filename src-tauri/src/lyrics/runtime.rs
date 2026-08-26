@@ -88,7 +88,7 @@ impl Default for LyricsSearchSession {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum LyricsRuntimeStatus {
     Idle,
@@ -98,7 +98,7 @@ pub enum LyricsRuntimeStatus {
     Error,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct LyricsRuntimeSnapshot {
     pub track_key: Option<String>,

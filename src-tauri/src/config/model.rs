@@ -5,6 +5,7 @@ pub struct AppConfig {
     pub app: AppPreferences,
     pub lyrics: LyricsPreferences,
     pub overlay: OverlayPreferences,
+    pub laboratory: LaboratoryPreferences,
 }
 
 impl Default for AppConfig {
@@ -14,8 +15,89 @@ impl Default for AppConfig {
             app: AppPreferences::default(),
             lyrics: LyricsPreferences::default(),
             overlay: OverlayPreferences::default(),
+            laboratory: LaboratoryPreferences::default(),
         }
     }
+}
+
+/// 实验室当前选择的运行角色；运行状态本身不写入配置文件。
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum LaboratoryRole {
+    Server,
+    Client,
+}
+
+impl Default for LaboratoryRole {
+    fn default() -> Self {
+        Self::Server
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct LaboratoryServerPreferences {
+    pub name: String,
+    pub port: u16,
+    pub discovery_enabled: bool,
+    pub web_enabled: bool,
+    pub debounce_ms: u64,
+}
+
+impl Default for LaboratoryServerPreferences {
+    fn default() -> Self {
+        Self {
+            name: default_laboratory_device_name(),
+            port: 47_123,
+            discovery_enabled: true,
+            web_enabled: false,
+            debounce_ms: 1_000,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct LaboratoryClientPreferences {
+    pub name: String,
+    pub last_server_id: Option<String>,
+}
+
+impl Default for LaboratoryClientPreferences {
+    fn default() -> Self {
+        Self {
+            name: default_laboratory_device_name(),
+            last_server_id: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default, rename_all = "camelCase")]
+pub struct LaboratoryPreferences {
+    pub role: LaboratoryRole,
+    pub auto_start: bool,
+    pub server: LaboratoryServerPreferences,
+    pub client: LaboratoryClientPreferences,
+}
+
+impl Default for LaboratoryPreferences {
+    fn default() -> Self {
+        Self {
+            role: LaboratoryRole::Server,
+            auto_start: false,
+            server: LaboratoryServerPreferences::default(),
+            client: LaboratoryClientPreferences::default(),
+        }
+    }
+}
+
+fn default_laboratory_device_name() -> String {
+    std::env::var("COMPUTERNAME")
+        .or_else(|_| std::env::var("HOSTNAME"))
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .unwrap_or_else(|| "Lyrics Plus".into())
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -726,6 +808,22 @@ impl AppConfig {
             ));
         }
         self.schema_version = CONFIG_SCHEMA_VERSION;
+        self.laboratory.server.name = self.laboratory.server.name.trim().to_owned();
+        if self.laboratory.server.name.is_empty() {
+            self.laboratory.server.name = default_laboratory_device_name();
+        }
+        self.laboratory.client.name = self.laboratory.client.name.trim().to_owned();
+        if self.laboratory.client.name.is_empty() {
+            self.laboratory.client.name = default_laboratory_device_name();
+        }
+        if !(1_024..=65_535).contains(&self.laboratory.server.port) {
+            return Err("实验室服务端端口必须在 1024 到 65535 之间".into());
+        }
+        self.laboratory.server.debounce_ms = self.laboratory.server.debounce_ms.clamp(50, 10_000);
+        let last_server_id = self.laboratory.client.last_server_id.take();
+        self.laboratory.client.last_server_id = last_server_id
+            .map(|value| value.trim().to_owned())
+            .filter(|value| !value.is_empty());
         self.lyrics.base_appearance.font_family =
             self.lyrics.base_appearance.font_family.trim().to_owned();
         if self.lyrics.base_appearance.font_family.is_empty() {

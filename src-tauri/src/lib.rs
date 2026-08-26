@@ -1,5 +1,6 @@
 mod commands;
 mod config;
+mod laboratory;
 mod language;
 mod lyrics;
 #[cfg(target_os = "macos")]

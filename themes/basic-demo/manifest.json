@@ -1,0 +1,7 @@
+{
+  "id": "basic-demo",
+  "name": "基础 Demo",
+  "version": "1.0.0",
+  "entry": "index.html",
+  "sdkVersion": "1"
+}

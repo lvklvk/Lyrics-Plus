@@ -242,7 +242,11 @@ fn sanitize_jsonc(raw: &str) -> Result<String, ConfigDraftError> {
 }
 
 fn validate_known_fields(value: &Value, raw: &str) -> Result<(), ConfigDraftError> {
-    check_keys(value, raw, &["schemaVersion", "app", "lyrics", "overlay"])?;
+    check_keys(
+        value,
+        raw,
+        &["schemaVersion", "app", "lyrics", "overlay", "laboratory"],
+    )?;
     if let Some(app) = value.get("app") {
         check_keys(app, raw, APP_CONFIG_KEYS)?;
         if let Some(shortcuts) = app.get("shortcuts") {
@@ -263,6 +267,25 @@ fn validate_known_fields(value: &Value, raw: &str) -> Result<(), ConfigDraftErro
             for application in applications {
                 check_keys(application, raw, &["name", "bundleId"])?;
             }
+        }
+    }
+    if let Some(laboratory) = value.get("laboratory") {
+        check_keys(laboratory, raw, &["role", "autoStart", "server", "client"])?;
+        if let Some(server) = laboratory.get("server") {
+            check_keys(
+                server,
+                raw,
+                &[
+                    "name",
+                    "port",
+                    "discoveryEnabled",
+                    "webEnabled",
+                    "debounceMs",
+                ],
+            )?;
+        }
+        if let Some(client) = laboratory.get("client") {
+            check_keys(client, raw, &["name", "lastServerId"])?;
         }
     }
     if let Some(lyrics) = value.get("lyrics") {
@@ -520,6 +543,9 @@ fn validate_field_types_and_options(value: &Value, raw: &str) -> Result<(), Conf
         ("/lyrics/displays/notch/appearance", "appearance"),
         ("/overlay", "overlay"),
         ("/overlay/appearance", "appearance"),
+        ("/laboratory", "laboratory"),
+        ("/laboratory/server", "server"),
+        ("/laboratory/client", "client"),
     ] {
         if value
             .pointer(pointer)
@@ -578,6 +604,9 @@ fn validate_field_types_and_options(value: &Value, raw: &str) -> Result<(), Conf
         ("/overlay/visible", "visible"),
         ("/overlay/locked", "locked"),
         ("/overlay/hideWhenNotPlaying", "hideWhenNotPlaying"),
+        ("/laboratory/autoStart", "autoStart"),
+        ("/laboratory/server/discoveryEnabled", "discoveryEnabled"),
+        ("/laboratory/server/webEnabled", "webEnabled"),
         ("/lyrics/displays/statusBar/enabled", "enabled"),
         (
             "/lyrics/displays/statusBar/hideWhenNotPlaying",
@@ -702,6 +731,8 @@ fn validate_field_types_and_options(value: &Value, raw: &str) -> Result<(), Conf
             "/overlay/appearance/secondaryFontWeight",
             "secondaryFontWeight",
         ),
+        ("/laboratory/server/port", "port"),
+        ("/laboratory/server/debounceMs", "debounceMs"),
     ] {
         if value
             .pointer(pointer)
@@ -711,6 +742,33 @@ fn validate_field_types_and_options(value: &Value, raw: &str) -> Result<(), Conf
         }
     }
     validate_language_preference(value, raw)?;
+    validate_string_option(
+        value,
+        raw,
+        "/laboratory/role",
+        "role",
+        &["server", "client"],
+    )?;
+    for (pointer, key) in [
+        ("/laboratory/server/name", "name"),
+        ("/laboratory/client/name", "name"),
+    ] {
+        if value
+            .pointer(pointer)
+            .is_some_and(|candidate| !candidate.is_string())
+        {
+            return Err(error_at_key(raw, key, &format!("{key} 必须是字符串")));
+        }
+    }
+    if let Some(candidate) = value.pointer("/laboratory/client/lastServerId") {
+        if !candidate.is_null() && !candidate.is_string() {
+            return Err(error_at_key(
+                raw,
+                "lastServerId",
+                "lastServerId 必须是字符串或 null",
+            ));
+        }
+    }
     if let Some(candidate) = value.pointer("/lyrics/displays/notch/monitorId") {
         if !candidate.is_null() && !candidate.is_string() {
             return Err(error_at_key(
@@ -1194,6 +1252,18 @@ fn validate_numeric_ranges(value: &Value, raw: &str) -> Result<(), ConfigDraftEr
             value.pointer("/overlay/appearance/romanizationFontScale"),
             0.35,
             1.0,
+        ),
+        (
+            "port",
+            value.pointer("/laboratory/server/port"),
+            1_024.0,
+            65_535.0,
+        ),
+        (
+            "debounceMs",
+            value.pointer("/laboratory/server/debounceMs"),
+            50.0,
+            10_000.0,
         ),
     ];
     for (key, candidate, minimum, maximum) in checks {

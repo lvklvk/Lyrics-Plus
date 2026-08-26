@@ -74,7 +74,7 @@ export const zhTW = {
     noTrackHint: "播放歌曲後即可快速搜尋並切換歌詞",
     searchLabel: "依歌名搜尋歌詞", searchPlaceholder: "輸入歌名，歌手、專輯與長度將沿用目前歌曲",
     candidates: "候選歌詞", localCandidates: "本機歌詞", onlineCandidates: "線上歌詞", current: "目前使用", recommended: "推薦", searchingCandidates: "正在搜尋候選歌詞",
-    noCandidates: "目前沒有候選歌詞", autoSearchHint: "播放歌曲後會自動搜尋所有已啟用的來源。",
+    noCandidates: "目前沒有候選歌詞", autoSearchHint: "播放歌曲後會自動搜尋所有已啟用的來源。", remoteHint: "目前為實驗室客戶端，歌詞由服務端提供；請在服務端切換歌詞。",
     preview: "歌詞瀏覽", applying: "正在套用這份歌詞…", selectCandidate: "請選擇候選歌詞",
     rawHint: "這裡會顯示未經處理的原始 LRC 內容。", switched: "已切換為 {{source}} 的歌詞",
   },
@@ -124,10 +124,10 @@ export const zhTW = {
       navigation: "設定分類", onThisPage: "本頁目錄", closeToast: "關閉", advanced: "進階工具", resetTitle: "恢復分類預設設定",
       nav: {
         style: "樣式", display: "顯示與互動", lyrics: "歌詞", player: "播放器",
-        application: "應用程式", debug: "偵錯紀錄", config: "設定檔", about: "關於與更新",
+        application: "應用程式", debug: "偵錯紀錄", config: "設定檔", laboratory: "實驗室", about: "關於與更新",
       },
       resetConfirm: "將恢復此分類的預設設定。歌詞庫和歌曲連結不會刪除。",
-      resetDone: "{{section}}已恢復預設值。", positionReset: "桌面歌詞位置已重設。",
+      resetDone: "{{section}}已恢復預設值。", positionReset: "桌面歌詞位置已重設。", webRequiresServer: "網頁服務只能由服務端提供；請前往多端歌詞同步，停止客戶端並切換為服務端。", webRequiresStart: "已開啟網頁服務；請在多端歌詞同步中啟動服務端後，這裡會顯示帶存取令牌的連結。", webDisabledHint: "開啟網頁服務後，並在多端歌詞同步中啟動服務端，這裡會顯示帶存取令牌的連結。",
     },
     theme: { dark: "深色", light: "淺色", system: "跟隨系統", switchToLight: "切換為淺色主題", switchToDark: "切換為深色主題", switchToSystem: "切換為跟隨系統" },
     common: {
@@ -226,5 +226,6 @@ export const zhTW = {
       myConfigAria: "我的 JSONC 設定", placeholder: "在此輸入 JSONC 設定",
       fallback: "目前草稿無效：驗證結果將完全回復為預設值，執行中的應用程式仍會保留上一次有效設定。",
     },
+    laboratory: { title: "實驗室", description: "讓其他 Lyrics Plus 客戶端、瀏覽器和主題即時使用此裝置的播放與歌詞狀態。", loading: "正在讀取實驗室狀態…", roleTitle: "執行角色", serverRole: "服務端", clientRole: "客戶端", roleHint: "服務端提供播放狀態；客戶端接收並顯示遠端狀態。執行中需先停止服務後才能切換角色。", stopBeforeRole: "切換角色前必須先停止目前角色。", start: "啟動", stop: "停止", started: "實驗室已啟動。", stopped: "實驗室已停止。", connecting: "正在連線…", retry: "重試連線", saved: "實驗室設定已儲存。", autoStart: "隨應用程式啟動", autoStartHint: "啟動時恢復上次儲存的服務端或客戶端角色；預設關閉。", serverSettingsTitle: "服務端設定", serverName: "服務端名稱", serverNameHint: "預設使用裝置名稱，會顯示在連線清單中。", port: "服務端連接埠", portHint: "HTTP 與 WebSocket 共用此連接埠，預設 47123。", discovery: "區域網絡探索", discoveryHint: "透過 mDNS/Bonjour 廣播服務端；關閉後仍可手動連線。", webEnabled: "啟用網頁服務", webEnabledHint: "允許瀏覽器透過連結存取即時歌詞；關閉後不再提供網頁網址。", debounce: "全域控制防抖", debounceHint: "所有客戶端和網頁指令的合併視窗，防抖期間只執行最後一條。", serverId: "穩定服務端 ID", serverIdHint: "用於 IP 變更後識別，儲存在獨立憑據檔案中。", savePassword: "儲存密碼", showPassword: "顯示密碼", hidePassword: "隱藏密碼", passwordConfigured: "已設定密碼，輸入新值可替換", passwordPlaceholder: "留空表示無密碼", passwordOn: "已啟用連線密碼；修改後現有客戶端工作階段會失效。", passwordOff: "目前為無密碼開放模式。", passwordSaved: "服務端密碼已更新。", webTitle: "網頁服務", webAddress: "存取網址", webAddressHint: "選擇一個地址後複製連結、直接開啟，或掃描下方 QR 碼存取。", selectedAddress: "目前存取連結", selected: "目前", webAddressesEmpty: "找不到可用的區域網絡 IPv4 地址", webAddressesEmptyHint: "請確認裝置已連接到 Wi‑Fi 或有線網絡。", copyLink: "複製連結", linkCopied: "連結已複製。", openLink: "開啟網頁", qrAlt: "網頁服務 QR 碼", qrHint: "使用手機掃描 QR 碼，在瀏覽器中開啟帶存取令牌的網頁。", resetToken: "重設存取令牌", tokenReset: "網頁存取令牌已重設，舊連結已失效。", webOffHint: "在服務端設定中開啟網頁服務後，這裡會顯示帶存取令牌的連結。", clientsTitle: "App 客戶端", clientsEmpty: "還沒有連線過 App 客戶端。", online: "在線", offline: "離線", never: "從未連線", kick: "踢出", forget: "忘記", kicked: "客戶端已斷線。", forgotten: "已刪除離線記錄。", clientSettingsTitle: "客戶端設定", clientName: "客戶端名稱", clientNameHint: "服務端客戶端清單中顯示的名稱。", clientId: "穩定客戶端 ID", clientIdHint: "用於服務端識別，儲存在獨立憑據檔案中。", scan: "掃描服務端", scanDone: "掃描完成。", manualTitle: "手動連線", addressPlaceholder: "IP 或網域", connect: "連線", manualInvalid: "請輸入有效的 IP/網域和 1024–65535 連接埠。", serverListTitle: "最近連線", serversEmpty: "還沒有發現或儲存過服務端。", passwordRequired: "需要密碼", openAccess: "無密碼", themesTitle: "網頁主題", themesHint: "主題目錄中的每個子目錄都必須包含 manifest.json；無效主題不會載入。主題在沙箱 iframe 中執行。", themesEmpty: "目前沒有有效主題，請將主題目錄放入應用程式資料目錄 / themes /。", themesPath: "主題目錄：應用程式資料目錄 / themes /", directions: { title: "實驗室方向", sync: "多端歌詞同步", web: "網頁端主題平台", hardware: "硬體歌詞屏", available: "已啟用", developing: "開發中", hardwareHint: "本期僅保留硬體擴展位，不接入 Wi-Fi、藍牙、串口或具體硬體。" }, phase: { stopped: "已停止", starting: "正在啟動", running: "執行中", connecting: "正在連線", reconnecting: "正在重連", error: "錯誤" }, sections: { role: "角色與狀態", server: "服務端", client: "客戶端", web: "網頁服務", themes: "網頁主題", directions: "實驗室方向" } },
   },
 } satisfies AppTranslationResource;

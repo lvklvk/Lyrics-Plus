@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lyrics Plus 基础 Demo</title>
+    <link rel="stylesheet" href="./index.css">
+  </head>
+  <body>
+    <main>
+      <header class="card intro">
+        <div>
+          <p class="eyebrow">Lyrics Plus Theme SDK v1</p>
+          <h1>基础 Demo</h1>
+          <p class="muted">这是一个不依赖框架的最小主题示例。复制这个目录并修改 manifest.json 的 id，就可以开始编写自己的主题。</p>
+        </div>
+        <dl class="sdk-meta">
+          <div><dt>SDK 版本</dt><dd id="sdk-version">-</dd></div>
+          <div><dt>连接状态</dt><dd id="connection-state">connecting</dd></div>
+        </dl>
+      </header>
+
+      <section class="grid">
+        <article class="card playback-card">
+          <div class="section-heading"><h2>播放</h2><span id="playback-status" class="muted">等待状态</span></div>
+          <div class="now-playing">
+            <div class="artwork-frame"><img id="artwork" alt="歌曲封面"></div>
+            <div class="track-info">
+              <h3 id="title">等待播放</h3>
+              <p id="artist" class="muted">-</p>
+              <p id="album" class="muted">-</p>
+            </div>
+          </div>
+          <dl class="details">
+            <div><dt>播放器</dt><dd id="player">-</dd></div>
+            <div><dt>来源应用</dt><dd id="source-app">-</dd></div>
+            <div><dt>播放位置</dt><dd id="position">-</dd></div>
+            <div><dt>时长</dt><dd id="duration">-</dd></div>
+          </dl>
+          <progress id="progress" max="1" value="0"></progress>
+          <div class="controls">
+            <button data-method="previousTrack">上一首</button>
+            <button data-method="play">播放</button>
+            <button data-method="pause">暂停</button>
+            <button data-method="togglePlayPause">播放 / 暂停</button>
+            <button data-method="nextTrack">下一首</button>
+          </div>
+          <div class="seek-row">
+            <label for="seek">调用 sdk.seek(positionMs)</label>
+            <input id="seek" type="range" min="0" max="1" value="0" step="1">
+          </div>
+          <div class="generic-control">
+            <label for="generic-action">调用 sdk.control(action)</label>
+            <select id="generic-action">
+              <option value="previous">previous</option>
+              <option value="play">play</option>
+              <option value="pause">pause</option>
+              <option value="toggle_play_pause">toggle_play_pause</option>
+              <option value="next">next</option>
+            </select>
+            <button id="send-generic-command">发送</button>
+          </div>
+        </article>
+
+        <article class="card lyrics-card">
+          <div class="section-heading"><h2>歌词</h2><span id="lyrics-status" class="muted">idle</span></div>
+          <p id="current-lyric" class="current-lyric">暂无歌词</p>
+          <p id="lyrics-error" class="error"></p>
+        </article>
+
+        <article class="card spectrum-card">
+          <div class="section-heading"><h2>频谱</h2><span id="spectrum-status" class="muted">idle</span></div>
+          <div id="spectrum-meter" class="spectrum-meter" aria-label="16 段频谱"></div>
+          <p id="spectrum-source" class="muted">来源应用：-</p>
+        </article>
+      </section>
+
+      <section class="card raw-data">
+        <div class="section-heading"><h2>SDK 数据</h2><span class="muted">完整状态对象</span></div>
+        <pre id="state-json">null</pre>
+      </section>
+
+      <section class="card error-data">
+        <div class="section-heading"><h2>最近一次错误</h2><span class="muted">sdk.onError</span></div>
+        <pre id="error-json">暂无错误</pre>
+      </section>
+    </main>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>

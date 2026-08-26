@@ -46,11 +46,11 @@ export default function QuickLyricsWindow() {
     setSearchTitle(playback.snapshot.title ?? "");
     setSelectedKey(null);
     setNotice(null);
-    if (!lyrics.trackKey || !playback.snapshot.title || !playback.snapshot.artist) return;
+    if (!lyrics.laboratoryReady || lyrics.isRemote || !lyrics.trackKey || !playback.snapshot.title || !playback.snapshot.artist) return;
     if (searchedTrack.current === lyrics.trackKey) return;
     searchedTrack.current = lyrics.trackKey;
     void lyrics.search();
-  }, [lyrics.trackKey, playback.snapshot.artist, playback.snapshot.title]);
+  }, [lyrics.isRemote, lyrics.laboratoryReady, lyrics.trackKey, playback.snapshot.artist, playback.snapshot.title]);
 
   useEffect(() => {
     if (lyrics.results.length === 0) {
@@ -97,6 +97,7 @@ export default function QuickLyricsWindow() {
   };
 
   const searchLyrics = async () => {
+    if (!lyrics.laboratoryReady || lyrics.isRemote) return;
     const title = searchTitle.trim();
     const artist = playback.snapshot.artist?.trim();
     if (!title || !artist || !lyrics.trackKey || lyrics.searching) return;
@@ -144,10 +145,11 @@ export default function QuickLyricsWindow() {
         <form className={styles.search} onSubmit={(event) => { event.preventDefault(); void searchLyrics(); }}>
           <InputGroup>
             <InputGroupAddon><Search aria-hidden="true" /></InputGroupAddon>
-            <InputGroupInput aria-label={t("quickLyrics.searchLabel")} autoComplete="off" disabled={!lyrics.trackKey || lyrics.searching} placeholder={t("quickLyrics.searchPlaceholder")} value={searchTitle} onChange={(event) => setSearchTitle(event.currentTarget.value)} />
-            <InputGroupAddon align="inline-end"><Button size="sm" disabled={!lyrics.trackKey || lyrics.searching || !searchTitle.trim()} type="submit">{lyrics.searching ? t("common.actions.searching") : t("common.actions.search")}</Button></InputGroupAddon>
+            <InputGroupInput aria-label={t("quickLyrics.searchLabel")} autoComplete="off" disabled={!lyrics.laboratoryReady || lyrics.isRemote || !lyrics.trackKey || lyrics.searching} placeholder={t("quickLyrics.searchPlaceholder")} value={searchTitle} onChange={(event) => setSearchTitle(event.currentTarget.value)} />
+            <InputGroupAddon align="inline-end"><Button size="sm" disabled={!lyrics.laboratoryReady || lyrics.isRemote || !lyrics.trackKey || lyrics.searching || !searchTitle.trim()} type="submit">{lyrics.searching ? t("common.actions.searching") : t("common.actions.search")}</Button></InputGroupAddon>
           </InputGroup>
         </form>
+        {lyrics.isRemote && <p className="text-xs text-muted-foreground">{t("quickLyrics.remoteHint")}</p>}
       </header>
 
       <section className={styles.workspace}>

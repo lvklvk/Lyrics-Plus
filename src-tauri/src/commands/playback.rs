@@ -1,8 +1,12 @@
 #[tauri::command]
 pub fn get_playback_artwork(
     artwork_id: String,
+    app: tauri::AppHandle,
     state: State<'_, AppState>,
 ) -> Result<Option<PlaybackArtwork>, String> {
+    if state.laboratory.is_client() {
+        return state.laboratory.fetch_artwork(&app, &artwork_id);
+    }
     state.system_media.artwork(&artwork_id)
 }
 
@@ -12,6 +16,16 @@ pub fn start_playback_spectrum(
     window: tauri::WebviewWindow,
     state: State<'_, AppState>,
 ) -> PlaybackSpectrumState {
+    if state.laboratory.is_client() {
+        let current = state
+            .laboratory
+            .remote_snapshot()
+            .map(|snapshot| snapshot.spectrum_state)
+            .unwrap_or_default();
+        return state
+            .spectrum
+            .subscribe_remote(&app, window.label(), &current);
+    }
     let snapshot = state
         .last_snapshot
         .read()
@@ -33,6 +47,13 @@ pub fn stop_playback_spectrum(
 
 #[tauri::command]
 pub fn get_playback_spectrum_state(state: State<'_, AppState>) -> PlaybackSpectrumState {
+    if state.laboratory.is_client() {
+        return state
+            .laboratory
+            .remote_snapshot()
+            .map(|snapshot| snapshot.spectrum_state)
+            .unwrap_or_default();
+    }
     state.spectrum.state()
 }
 

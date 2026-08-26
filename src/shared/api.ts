@@ -9,6 +9,7 @@ import { lyricsApi } from "./api/lyrics";
 import { overlayApi } from "./api/overlay";
 import { playbackApi } from "./api/playback";
 import { settingsApi } from "./api/settings";
+import { laboratoryApi } from "./api/laboratory";
 import type { PlaybackSnapshot } from "./types";
 
 export { isTauriRuntime } from "./tauriEvent";
@@ -22,6 +23,7 @@ export const api = {
   ...overlayApi,
   ...applicationApi,
   ...settingsApi,
+  ...laboratoryApi,
 };
 
 export function messageOf(error: unknown): string {
@@ -41,6 +43,22 @@ export function messageOf(error: unknown): string {
       "start_playback_spectrum",
       "stop_playback_spectrum",
       "get_playback_spectrum_state",
+      "get_laboratory_status",
+      "start_laboratory",
+      "stop_laboratory",
+      "set_laboratory_role",
+      "set_laboratory_auto_start",
+      "set_laboratory_server_settings",
+      "set_laboratory_client_settings",
+      "set_laboratory_server_password",
+      "reset_laboratory_web_token",
+      "connect_laboratory_server",
+      "retry_laboratory_connection",
+      "kick_laboratory_client",
+      "forget_laboratory_client",
+      "get_laboratory_themes",
+      "reveal_laboratory_themes_directory",
+      "scan_laboratory_servers",
     ].includes(error.command) && error.message) {
       return error.message;
     }

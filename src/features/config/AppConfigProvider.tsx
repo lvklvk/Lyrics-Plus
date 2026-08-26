@@ -95,7 +95,7 @@ function applyPendingNotchPreferences(
 }
 
 const defaultConfig: AppConfig = {
-  schemaVersion: 54,
+  schemaVersion: 55,
   app: { theme: "dark", language: "system", playerSelection: "auto", systemMediaFilterMode: "allowlist", systemMediaApplications: [], playerFollowerApplication: null, hideDockIcon: false, silentStartup: false, autoCheckUpdates: true, lyricsWindowsShowOnAllSpaces: false, shortcuts: defaultGlobalShortcuts },
   lyrics: {
     providers: {
@@ -142,6 +142,21 @@ const defaultConfig: AppConfig = {
     locked: false,
     hideWhenNotPlaying: false,
     appearance: defaultOverlayAppearance,
+  },
+  laboratory: {
+    role: "server",
+    autoStart: false,
+    server: {
+      name: "Lyrics Plus",
+      port: 47123,
+      discoveryEnabled: true,
+      webEnabled: false,
+      debounceMs: 1000,
+    },
+    client: {
+      name: "Lyrics Plus",
+      lastServerId: null,
+    },
   },
 };
 

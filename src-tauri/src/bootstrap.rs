@@ -30,6 +30,10 @@ pub fn run() {
                 .map_err(|error| std::io::Error::other(error))?;
             let config = Arc::new(config);
             let configured = config.snapshot();
+            let laboratory = Arc::new(
+                laboratory::LaboratoryRuntime::new(&app_dir, configured.laboratory.role)
+                    .map_err(std::io::Error::other)?,
+            );
             let provider_settings = configured.lyrics.providers.clone();
             let selection = configured.app.player_selection;
             let locked = configured.overlay.locked;
@@ -102,6 +106,7 @@ pub fn run() {
                     .timeout(Duration::from_secs(8))
                     .build()
                     .map_err(|error| error.to_string())?,
+                laboratory,
             });
 
             if let Err(error) = player_lifecycle::sync_service(app.handle(), &configured.app) {
@@ -286,6 +291,22 @@ pub fn run() {
             commands::validate_app_config_draft,
             commands::save_app_config_draft,
             commands::reset_settings_section,
+            commands::get_laboratory_status,
+            commands::start_laboratory,
+            commands::stop_laboratory,
+            commands::set_laboratory_role,
+            commands::set_laboratory_auto_start,
+            commands::set_laboratory_server_settings,
+            commands::set_laboratory_client_settings,
+            commands::set_laboratory_server_password,
+            commands::reset_laboratory_web_token,
+            commands::scan_laboratory_servers,
+            commands::connect_laboratory_server,
+            commands::retry_laboratory_connection,
+            commands::kick_laboratory_client,
+            commands::forget_laboratory_client,
+            commands::get_laboratory_themes,
+            commands::reveal_laboratory_themes_directory,
         ])
         .build(tauri::generate_context!())
         .expect("error while building Lyrics Plus");

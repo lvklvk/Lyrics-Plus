@@ -51,6 +51,14 @@ pub(crate) fn reconcile_overlay_visibility(app: &tauri::AppHandle) -> Result<boo
 fn start_player_monitor(app: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         loop {
+            let laboratory_client = app
+                .try_state::<AppState>()
+                .is_some_and(|state| state.laboratory.is_client());
+            if laboratory_client {
+                // 客户端状态由 Laboratory Runtime 的 WebSocket 会话驱动，不能被本机播放器轮询覆盖。
+                tokio::time::sleep(Duration::from_millis(500)).await;
+                continue;
+            }
             let selection = app
                 .try_state::<AppState>()
                 .map(|state| *state.selection.read().unwrap_or_else(|e| e.into_inner()))
@@ -98,6 +106,15 @@ fn start_player_monitor(app: tauri::AppHandle) {
                     previous_auto_player,
                 )
             });
+
+            if app
+                .try_state::<AppState>()
+                .is_some_and(|state| state.laboratory.is_client())
+            {
+                // 查询期间可能发生角色切换，避免迟到的本机结果覆盖远程状态。
+                tokio::time::sleep(Duration::from_millis(500)).await;
+                continue;
+            }
 
             if let Some(state) = app.try_state::<AppState>() {
                 *state

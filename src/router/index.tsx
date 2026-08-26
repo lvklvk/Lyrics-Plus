@@ -7,6 +7,7 @@ import AppSettingsPage from "../pages/settings/AppSettingsPage";
 import DebugSettingsPage from "../pages/settings/DebugSettingsPage";
 import ConfigSettingsPage from "../pages/settings/ConfigSettingsPage";
 import AboutSettingsPage from "../pages/settings/AboutSettingsPage";
+import LaboratorySettingsPage from "../pages/settings/LaboratorySettingsPage";
 import { lastSettingsSection } from "./settingsRoute";
 
 function SettingsIndexRedirect() {
@@ -34,6 +35,7 @@ const router = createHashRouter([
           { path: "application", element: <AppSettingsPage scope="application" /> },
           { path: "debug", element: <DebugSettingsPage /> },
           { path: "config", element: <ConfigSettingsPage /> },
+          { path: "laboratory", element: <LaboratorySettingsPage /> },
           { path: "about", element: <AboutSettingsPage /> },
         ],
       },

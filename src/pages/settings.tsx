@@ -4,7 +4,7 @@ import {
 } from "react";
 import { Outlet, useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Bug, CircleAlert, Download, FileJson, Info, LoaderCircle, Monitor, MonitorUp, Moon, Music2, Palette, RotateCw, Settings2, Sun, X } from "lucide-react";
+import { Bug, CircleAlert, Download, FileJson, FlaskConical, Info, LoaderCircle, Monitor, MonitorUp, Moon, Music2, Palette, RotateCw, Settings2, Sun, X } from "lucide-react";
 import { Alert } from "@/components/ui/alert";
 import { IconButton } from "@/components/ui/icon-button";
 import {
@@ -405,6 +405,7 @@ export default function Settings() {
     { to: "/settings/about", label: t("settings.shell.nav.about"), icon: Info },
   ];
   const advancedNavigation: SettingsNavigationItem[] = [
+    { to: "/settings/laboratory", label: t("settings.shell.nav.laboratory"), icon: FlaskConical },
     { to: "/settings/debug", label: t("settings.shell.nav.debug"), icon: Bug },
     { to: "/settings/config", label: t("settings.shell.nav.config"), icon: FileJson },
   ];

@@ -9,7 +9,7 @@ use crate::config::{is_dedicated_player_bundle_id, RegisteredApplication, System
 pub(crate) mod automation;
 mod spectrum;
 mod system;
-pub use spectrum::{PlaybackSpectrumService, PlaybackSpectrumState};
+pub use spectrum::{PlaybackSpectrumFrame, PlaybackSpectrumService, PlaybackSpectrumState};
 pub use system::SystemMediaService;
 
 const PROCESS_TIMEOUT_ERROR: &str = "Process timed out";
@@ -55,7 +55,7 @@ pub enum PlaybackAction {
     Next,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PlaybackArtwork {
     pub id: String,

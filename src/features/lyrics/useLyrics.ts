@@ -8,8 +8,10 @@ import type {
   LyricsLine,
   LyricsSearchInput,
   LyricsSearchResult,
+  LyricsRuntimeSnapshot,
   PlaybackSnapshot,
   ProviderStatus,
+  LaboratoryStatus,
 } from "../../shared/types";
 
 const AUXILIARY_TIMESTAMP_TOLERANCE_MS = 500;
@@ -43,6 +45,10 @@ export function useLyrics(snapshot: PlaybackSnapshot, positionMs: number) {
   const [searching, setSearching] = useState(false);
   const [providerStatuses, setProviderStatuses] = useState<ProviderStatus[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [laboratoryRole, setLaboratoryRole] = useState<LaboratoryStatus["role"] | null>(null);
+  const laboratoryClient = laboratoryRole === "client";
+  const laboratoryReady = laboratoryRole !== null;
+  const [remoteRuntime, setRemoteRuntime] = useState<LyricsRuntimeSnapshot | null>(null);
   const searchGeneration = useRef(0);
   const activeTrackKey = useRef(trackKey);
   const documentRef = useRef<LyricsDocument | null>(null);
@@ -50,6 +56,28 @@ export function useLyrics(snapshot: PlaybackSnapshot, positionMs: number) {
   const pendingOffsetWrites = useRef(new Map<string, PendingOffsetWrite>());
   const offsetWriteQueue = useRef<Promise<void>>(Promise.resolve());
   activeTrackKey.current = trackKey;
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return;
+    void api.getStatus()
+      .then((status) => setLaboratoryRole(status.role))
+      .catch(() => undefined);
+    return createTauriListenerCleanup(
+      listen<LaboratoryStatus>("laboratory://status", ({ payload }) => {
+        setLaboratoryRole(payload.role);
+      }),
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!isTauriRuntime()) return;
+    void api.getLyricsRuntimeSnapshot().then(setRemoteRuntime).catch(() => undefined);
+    return createTauriListenerCleanup(
+      listen<LyricsRuntimeSnapshot>("lyrics://runtime-changed", ({ payload }) => {
+        setRemoteRuntime(payload);
+      }),
+    );
+  }, []);
 
   const updateDocument = useCallback((next: LyricsDocument | null, key: string | null = activeTrackKey.current) => {
     documentRef.current = next;
@@ -73,15 +101,21 @@ export function useLyrics(snapshot: PlaybackSnapshot, positionMs: number) {
   }, [updateDocument]);
 
   const load = useCallback(async () => {
+    if (!laboratoryReady || laboratoryClient) {
+      updateDocument(null);
+      setResults([]);
+      return null;
+    }
     if (!trackKey) {
       updateDocument(null);
       setResults([]);
       return null;
     }
     return loadTrack(trackKey);
-  }, [loadTrack, trackKey, updateDocument]);
+  }, [laboratoryClient, laboratoryReady, loadTrack, trackKey, updateDocument]);
 
   const applyResult = useCallback(async (result: LyricsSearchResult, manualSelected = true) => {
+    if (!laboratoryReady || laboratoryClient) return null;
     if (!trackKey || !snapshot.title || !snapshot.artist) return null;
     setError(null);
     try {
@@ -100,12 +134,13 @@ export function useLyrics(snapshot: PlaybackSnapshot, positionMs: number) {
       if (activeTrackKey.current === trackKey) setError(messageOf(saveError));
       return null;
     }
-  }, [snapshot.album, snapshot.artist, snapshot.durationMs, snapshot.title, trackKey, updateDocument]);
+  }, [laboratoryClient, laboratoryReady, snapshot.album, snapshot.artist, snapshot.durationMs, snapshot.title, trackKey, updateDocument]);
 
   const search = useCallback(async (
     force = false,
     override?: LyricsSearchInput,
   ) => {
+    if (!laboratoryReady || laboratoryClient) return null;
     const input = override ?? {
       title: snapshot.title ?? "",
       artist: snapshot.artist ?? "",
@@ -135,16 +170,22 @@ export function useLyrics(snapshot: PlaybackSnapshot, positionMs: number) {
     } finally {
       if (isCurrent()) setSearching(false);
     }
-  }, [snapshot.album, snapshot.artist, snapshot.durationMs, snapshot.title, t, trackKey]);
+  }, [laboratoryClient, laboratoryReady, snapshot.album, snapshot.artist, snapshot.durationMs, snapshot.title, t, trackKey]);
   useEffect(() => {
     ++searchGeneration.current;
     setSearching(false);
     setError(null);
     setResults([]);
+    if (!laboratoryReady) return;
+    if (laboratoryClient) {
+      const remoteDocument = remoteRuntime?.trackKey === trackKey ? remoteRuntime.document : null;
+      updateDocument(remoteDocument, remoteDocument ? trackKey : null);
+      return;
+    }
     updateDocument(null);
     if (!trackKey) return;
     void loadTrack(trackKey);
-  }, [loadTrack, trackKey, updateDocument]);
+  }, [laboratoryClient, laboratoryReady, loadTrack, remoteRuntime, trackKey, updateDocument]);
 
   useEffect(() => {
     if (!isTauriRuntime()) return;
@@ -185,6 +226,7 @@ export function useLyrics(snapshot: PlaybackSnapshot, positionMs: number) {
   }, [currentLine, document]);
 
   const importRaw = async (raw: string) => {
+    if (!laboratoryReady || laboratoryClient) return;
     if (!trackKey || !snapshot.title || !snapshot.artist) return;
     setError(null);
     try {
@@ -203,6 +245,7 @@ export function useLyrics(snapshot: PlaybackSnapshot, positionMs: number) {
   };
 
   const enqueueOffsetWrite = (resolveNext: (currentOffsetMs: number) => number) => {
+    if (!laboratoryReady || laboratoryClient) return Promise.resolve();
     const key = trackKey;
     const current = documentRef.current;
     if (!key || !current || documentTrackKey.current !== key) return Promise.resolve();
@@ -241,6 +284,7 @@ export function useLyrics(snapshot: PlaybackSnapshot, positionMs: number) {
   const setOffset = (offsetMs: number) => enqueueOffsetWrite(() => offsetMs);
 
   const remove = async () => {
+    if (!laboratoryReady || laboratoryClient) return;
     if (!trackKey) return;
     try {
       await api.removeLyricsAssociation(trackKey);
@@ -270,5 +314,7 @@ export function useLyrics(snapshot: PlaybackSnapshot, positionMs: number) {
     changeOffset,
     setOffset,
     remove,
+    isRemote: laboratoryClient,
+    laboratoryReady,
   };
 }

@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex, RwLock};
 
 use crate::config::ConfigStore;
+use crate::laboratory::LaboratoryRuntime;
 use crate::lyrics::provider::ProviderRegistry;
 use crate::lyrics::{LyricsRuntimeSnapshot, LyricsSearchSession};
 use crate::player::{
@@ -31,4 +32,5 @@ pub struct AppState {
     pub providers: Arc<ProviderRegistry>,
     pub system_media: Arc<SystemMediaService>,
     pub http: reqwest::Client,
+    pub laboratory: Arc<LaboratoryRuntime>,
 }

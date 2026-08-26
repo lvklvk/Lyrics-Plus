@@ -13,6 +13,8 @@ type SpectrumStateListener = (state: PlaybackSpectrumState) => void;
 
 let spectrumSubscriberCount = 0;
 let spectrumCommandQueue: Promise<void> = Promise.resolve();
+const artworkCache = new Map<string, PlaybackArtwork>();
+const artworkRequests = new Map<string, Promise<PlaybackArtwork | null>>();
 
 function queueSpectrumCommand<T>(operation: () => Promise<T>) {
   const result = spectrumCommandQueue.then(operation, operation);
@@ -53,7 +55,20 @@ export const playerService = {
   },
 
   getArtwork(artworkId: string): Promise<PlaybackArtwork | null> {
-    return api.getPlaybackArtwork(artworkId);
+    const cached = artworkCache.get(artworkId);
+    if (cached) return Promise.resolve(cached);
+    const pending = artworkRequests.get(artworkId);
+    if (pending) return pending;
+    const request = api.getPlaybackArtwork(artworkId)
+      .then((artwork) => {
+        if (artwork?.id === artworkId) {
+          artworkCache.set(artworkId, artwork);
+        }
+        return artwork;
+      })
+      .finally(() => artworkRequests.delete(artworkId));
+    artworkRequests.set(artworkId, request);
+    return request;
   },
 
   subscribeSpectrum(
