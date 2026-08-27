@@ -463,6 +463,7 @@ fn validate_known_fields(value: &Value, raw: &str) -> Result<(), ConfigDraftErro
                             "translationColor",
                             "romanizationColor",
                             "karaokeStyle",
+                            "lineGap",
                             "borderRadius",
                             "maxWidth",
                             "expandedMaxWidth",
@@ -508,6 +509,8 @@ fn validate_known_fields(value: &Value, raw: &str) -> Result<(), ConfigDraftErro
                     "doubleLineMode",
                     "orientation",
                     "alignment",
+                    "primaryLinePosition",
+                    "lineGap",
                     "longText",
                     "secondaryDisplay",
                     "autoCenterWithTranslationOrRomanization",
@@ -521,6 +524,8 @@ fn validate_known_fields(value: &Value, raw: &str) -> Result<(), ConfigDraftErro
                     "textShadowOffsetY",
                     "textShadowBlur",
                     "textShadowColor",
+                    "textStrokeWidth",
+                    "textStrokeColor",
                 ],
             )?;
         }
@@ -895,7 +900,12 @@ fn validate_field_types_and_options(value: &Value, raw: &str) -> Result<(), Conf
         (
             "/overlay/appearance/alignment",
             "alignment",
-            &["center", "distributed"],
+            &["start", "center", "end", "distributed"],
+        ),
+        (
+            "/overlay/appearance/primaryLinePosition",
+            "primaryLinePosition",
+            &["first", "second"],
         ),
         (
             "/overlay/appearance/longText",
@@ -980,6 +990,7 @@ fn validate_field_types_and_options(value: &Value, raw: &str) -> Result<(), Conf
         "translationColor",
         "romanizationColor",
         "textShadowColor",
+        "textStrokeColor",
     ] {
         let pointer = format!("/overlay/appearance/{key}");
         if let Some(candidate) = value.pointer(&pointer) {
@@ -1170,6 +1181,12 @@ fn validate_numeric_ranges(value: &Value, raw: &str) -> Result<(), ConfigDraftEr
             800.0,
         ),
         (
+            "lineGap",
+            value.pointer("/lyrics/displays/notch/appearance/lineGap"),
+            0.0,
+            32.0,
+        ),
+        (
             "maxWidth",
             value.pointer("/lyrics/displays/notch/appearance/maxWidth"),
             320.0,
@@ -1218,6 +1235,12 @@ fn validate_numeric_ranges(value: &Value, raw: &str) -> Result<(), ConfigDraftEr
             64.0,
         ),
         (
+            "lineGap",
+            value.pointer("/overlay/appearance/lineGap"),
+            0.0,
+            32.0,
+        ),
+        (
             "textShadowOffsetX",
             value.pointer("/overlay/appearance/textShadowOffsetX"),
             -20.0,
@@ -1234,6 +1257,12 @@ fn validate_numeric_ranges(value: &Value, raw: &str) -> Result<(), ConfigDraftEr
             value.pointer("/overlay/appearance/textShadowBlur"),
             0.0,
             40.0,
+        ),
+        (
+            "textStrokeWidth",
+            value.pointer("/overlay/appearance/textStrokeWidth"),
+            0.0,
+            8.0,
         ),
         (
             "secondaryFontScale",
@@ -1325,7 +1354,7 @@ fn internal_draft_error(error: impl std::fmt::Display) -> ConfigDraftError {
     }
 }
 
-fn color_fields(style: &OverlayStyleSettings) -> [(&'static str, &str); 6] {
+fn color_fields(style: &OverlayStyleSettings) -> [(&'static str, &str); 7] {
     [
         ("高亮颜色", &style.active_color),
         ("未唱颜色", &style.inactive_color),
@@ -1333,6 +1362,7 @@ fn color_fields(style: &OverlayStyleSettings) -> [(&'static str, &str); 6] {
         ("翻译颜色", &style.translation_color),
         ("音译颜色", &style.romanization_color),
         ("文字阴影颜色", &style.text_shadow_color),
+        ("文字描边颜色", &style.text_stroke_color),
     ]
 }
 
