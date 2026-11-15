@@ -13,12 +13,17 @@ dist-ssr
 target
 src-tauri/binaries/
 *.local
+*.dSYM
+*.dSYM.zip
+*.xcarchive
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
+DerivedData/
+xcuserdata/
 *.suo
 *.ntvs*
 *.njsproj
