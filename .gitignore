@@ -1,3 +1,4 @@
+# Codex project-profile: language=TypeScript,Rust; framework=React,Tauri; toolchain=pnpm,Vite,Cargo
 # Logs
 logs
 *.log
